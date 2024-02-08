@@ -20,5 +20,6 @@ from apphempire import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('registro', views.registro)
+    path('registro', views.registro),
+    path('login', views.login)
 ]
