@@ -52,7 +52,19 @@ def generar_jwt_token(request,id):
   }
   token = jwt.encode(payload, 'clave_authz', algorithm='HS256')
   return token
-
+def verificacion_token(request):
+   token =request.META.get('HTTP_AUTHORIZATION',None)
+   if not token:
+      return JsonResponse({'error':'Falta el token'},status=401),None
+   try:
+      if token.startswith('Bearer '):
+         token = token.split()[1]
+      payload =jwt.decode(token,'clave_authz',algorithms=['HS256'])
+      return None,payload
+   except jwt.ExpiredSignatureError:
+      return JsonResponse({'error':'El token a expirado'},status=401),None
+   except jwt.InvalidTokenError:
+      return JsonResponse({'error':'El token no es valido'},status=401),None
 
 @csrf_exempt
 def login(request):
@@ -62,11 +74,8 @@ def login(request):
     data = json.loads(request.body)
     nombreusuarioenv =  data.get("username") 
     contraseñaenv= data.get("contraseña")
-    print(nombreusuarioenv)
-    print(contraseñaenv)
     queryUser =Usuarios.objects.get(username=nombreusuarioenv)
     contraseñaguardada =queryUser.contraseña
-    print(contraseñaguardada)
     if queryUser == None:
         return JsonResponse({"error": "No estas registrado"}, status=405)
     else:
@@ -78,3 +87,17 @@ def login(request):
       else:
         return JsonResponse({"error": "La contraseña no es correcta"}, status=405)
 
+@csrf_exempt
+def logout(request):
+  error_reponse, payload =verificacion_token(request)
+  if error_reponse:
+     return error_reponse
+  if request.method != "PATCH":
+    return JsonResponse({"error": "Metodo HTTP no soportado"}, status=405) 
+  try:
+    usuario=Usuarios.objects.get(id=payload["id"])
+    usuario.token = None
+    usuario.save()
+    return JsonResponse({'error':'Sesion Cerrada con éxito'},status=200)
+  except Usuarios.DoesNotExist:
+     return JsonResponse({'error':'Usuario no encontrado'},status=404)
