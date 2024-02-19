@@ -73,7 +73,7 @@ class Usuarios(models.Model):
     nombre = models.CharField(max_length=255, blank=True, null=True)
     apellidos = models.CharField(max_length=255, blank=True, null=True)
     fechareg = models.DateField(blank=True, null=True)
-
+    token = models.CharField(max_length=1000, blank=True, null=True)
     class Meta:
         managed = False
         db_table = 'Usuarios'
