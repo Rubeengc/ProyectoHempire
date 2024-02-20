@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Usuarios, Derivados , Parafernalia, Flores,Semillas 
+from .models import Usuarios, Derivados , Parafernalia, Flores,Semillas,Productos 
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password
@@ -101,3 +101,14 @@ def logout(request):
     return JsonResponse({'error':'Sesion Cerrada con éxito'},status=200)
   except Usuarios.DoesNotExist:
      return JsonResponse({'error':'Usuario no encontrado'},status=404)
+@csrf_exempt
+def producto(request,producto_id):
+    producto=Productos.objects.get(pk=producto_id)
+    print(producto)
+    if request.method != "GET":
+      return JsonResponse({"error": "Metodo HTTP no soportado"}, status=405)
+    if producto != None:
+       
+       return JsonResponse({"nombre": producto.nombre ,"descripcion": producto.descripcion ,"precio": producto.precio ,"stock": producto.stock ,"imagen": producto.img}, status=200)
+    else:
+      return JsonResponse({"error": "Ese producto no existe"}, status=405)
