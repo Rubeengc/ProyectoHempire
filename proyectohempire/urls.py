@@ -24,5 +24,6 @@ urlpatterns = [
     path('login', views.login),
     path('logout',views.logout),
     path('producto/<int:producto_id>',views.producto),
-    path('productos/',views.list_producto)
+    path('productos/',views.list_producto),
+    path('carrito/',views.devolver_productos_en_carrito)
 ]
