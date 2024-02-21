@@ -6,6 +6,7 @@ from django.contrib.auth.hashers import make_password
 from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
+from django.core.paginator import Paginator
 import json
 import jwt
 import datetime
@@ -52,6 +53,7 @@ def generar_jwt_token(request,id):
   }
   token = jwt.encode(payload, 'clave_authz', algorithm='HS256')
   return token
+@csrf_exempt
 def verificacion_token(request):
    token =request.META.get('HTTP_AUTHORIZATION',None)
    if not token:
@@ -112,3 +114,24 @@ def producto(request,producto_id):
        return JsonResponse({"nombre": producto.nombre ,"descripcion": producto.descripcion ,"precio": producto.precio ,"stock": producto.stock ,"imagen": producto.img}, status=200)
     else:
       return JsonResponse({"error": "Ese producto no existe"}, status=405)
+@csrf_exempt
+def list_producto(request):
+   if request.method == 'GET':
+      productos_query = Productos.objects.all()
+      busqueda_query = request.GET.get('search',None)
+      if busqueda_query :
+         productos_query = productos_query.filter(nombre__icontains=busqueda_query)
+      sort_by = request.GET.get('sort','nombre')
+      productos_query = productos_query.order_by(sort_by)
+      paginator = Paginator(productos_query, request.GET.get('limit',10))
+      page =request.GET.get('page',1)
+      productos = paginator.get_page(page)
+      productos_data =[
+         {
+            'nombre':producto.nombre,
+            'precio':producto.precio,
+            'img':producto.img,
+            'stock':producto.stock
+         }for producto in productos
+      ]
+      return JsonResponse({'productos':productos_data,'total':paginator.count, 'page':page},status=200)
