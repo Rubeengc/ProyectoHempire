@@ -17,7 +17,7 @@ def registro(request):
     edadobli =data.get("edad")
     nombreusuario =  data.get("username") 
     correoelc =  data.get("correo") 
-    fecharegistro = datetime.now()
+    fecharegistro = datetime.datetime.now()
     print(nombreusuario)
     queryUsuarios = Usuarios.objects.filter(username = nombreusuario ).count()
     queryCorreo = Usuarios.objects.filter(correo = correoelc ).count()
