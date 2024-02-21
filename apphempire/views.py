@@ -160,3 +160,28 @@ def devolver_productos_en_carrito(request):
         }
         productos_carrito_info.append(producto_info)
   return JsonResponse(productos_carrito_info, safe=False)
+    
+@csrf_exempt
+def agregar_producto_al_carrito(request, id_producto):
+  error_reponse, payload =verificacion_token(request)
+  if error_reponse:
+     return error_reponse
+  if not payload:
+      return JsonResponse({'error': 'Se requiere un token de sesión'}, status=401)
+  if request.method != "POST":
+      return JsonResponse({"error": "Metodo HTTP no soportado"}, status=405)
+
+    # Verificar si el producto existe
+  try:
+      producto = Productos.objects.get(id=id_producto)
+  except Productos.DoesNotExist:
+      return JsonResponse({'error': 'El producto no existe'}, status=404)
+
+    # Verificar si el producto ya está en el carrito
+  if Carrito.objects.filter(producto_id=id_producto, payload=payload).exists():
+      return JsonResponse({'error': 'El producto ya está en el carrito'}, status=400)
+
+    # Crear una nueva entrada en el carrito
+  Carrito.objects.create(producto=producto, payload=payload)
+
+  return JsonResponse({'mensaje': 'Producto agregado al carrito correctamente'},status=200)
