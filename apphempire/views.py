@@ -135,3 +135,28 @@ def list_producto(request):
          }for producto in productos
       ]
       return JsonResponse({'productos':productos_data,'total':paginator.count, 'page':page},status=200)
+@csrf_exempt
+def devolver_productos_en_carrito(request):
+  error_reponse, payload =verificacion_token(request)
+  if error_reponse:
+     return error_reponse
+  if request.method != "GET":
+      return JsonResponse({"error": "Metodo HTTP no soportado"}, status=405)
+    # Obtener el ID del usuario a partir del token de sesión
+  id_user=Usuarios.objects.get(id=payload["id"])
+    # Obtener todos los productos en el carrito del usuario
+  productos_en_carrito = Carrito.objects.filter(id_user=usuario_id)
+    # Crear una lista para almacenar la información de los productos en el carrito
+  productos_carrito_info = []
+    # Obtener la información relevante de cada producto en el carrito
+  for producto_carrito in productos_en_carrito:
+        producto = producto_carrito.producto
+        producto_info = {
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'precio': str(producto.precio),
+            'stock': producto.stock,
+            'img': producto.img
+        }
+        productos_carrito_info.append(producto_info)
+  return JsonResponse(productos_carrito_info, safe=False)
