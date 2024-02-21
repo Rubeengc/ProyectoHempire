@@ -185,3 +185,89 @@ def agregar_producto_al_carrito(request, id_producto):
   Carrito.objects.create(producto=producto, payload=payload)
 
   return JsonResponse({'mensaje': 'Producto agregado al carrito correctamente'},status=200)
+
+@csrf_exempt
+def topventas(request):
+    if request.method != "GET":
+      return JsonResponse({"error": "Metodo HTTP no soportado"}, status=405)
+
+    # Diccionario para almacenar el top 5 de ventas por sección
+    top_5_ventas = {}
+
+    # Obtener el top 5 de ventas para la sección de Semillas
+    semillas_top_5 = Semillas.objects.order_by('-producto__numvendidos')[:5]
+
+    # Obtener información adicional de cada producto en el top 5 de ventas de Semillas
+    semillas_info = []
+    for semilla in semillas_top_5:
+        producto = semilla.producto
+        semilla_info = {
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'precio': str(producto.precio),
+            'stock': producto.stock,
+            'img': producto.img,
+            'numvendidos': producto.numvendidos
+        }
+        semillas_info.append(semilla_info)
+
+    # Agregar el top 5 de ventas de Semillas al diccionario
+    top_5_ventas['Semillas'] = semillas_info
+
+    flores_top_5 = Flores.objects.order_by('-producto__numvendidos')[:5]
+
+    # Obtener información adicional de cada producto en el top 5 de ventas de Semillas
+    flores_info = []
+    for flor in flores_top_5:
+        producto = flor.producto
+        flor_info = {
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'precio': str(producto.precio),
+            'stock': producto.stock,
+            'img': producto.img,
+            'numvendidos': producto.numvendidos
+        }
+        flores_info.append(flor_info)
+
+    # Agregar el top 5 de ventas de Semillas al diccionario
+    top_5_ventas['Flores'] = flores_info
+    
+    parafernalia_top_5 = Parafernalia.objects.order_by('-producto__numvendidos')[:5]
+
+    # Obtener información adicional de cada producto en el top 5 de ventas de Semillas
+    parafernalia_info = []
+    for parafern in parafernalia_top_5:
+        producto = parafern.producto
+        parafern_info = {
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'precio': str(producto.precio),
+            'stock': producto.stock,
+            'img': producto.img,
+            'numvendidos': producto.numvendidos
+        }
+        parafernalia_info.append(parafern_info)
+
+    # Agregar el top 5 de ventas de Semillas al diccionario
+    top_5_ventas['Parafernalia'] =  parafernalia_info
+    
+    derivados_top_5 = Derivados.objects.order_by('-producto__numvendidos')[:5]
+
+    # Obtener información adicional de cada producto en el top 5 de ventas de Semillas
+    derivados_info = []
+    for derivado in derivados_top_5:
+        producto = derivado.producto
+        derivado_info = {
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'precio': str(producto.precio),
+            'stock': producto.stock,
+            'img': producto.img,
+            'numvendidos': producto.numvendidos
+        }
+        derivados_info.append(derivado_info)
+
+    # Agregar el top 5 de ventas de Semillas al diccionario
+    top_5_ventas['Derivados'] =  derivados_info   
+    return JsonResponse(top_5_ventas)
